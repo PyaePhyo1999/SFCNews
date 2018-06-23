@@ -53,112 +53,41 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class NewsModel {
     private static NewsModel objInstance;
-    private AppDatabase mAppDatabase;
     private int mmNewsPageIndex = 1;
-    private Map<String,NewsVO> mNewsMap;
-    private MMNewsAPI theApi;
+    private Map<String, NewsVO> mNewsMap;
 
-    public NewsModel(Context context) {
+
+    private NewsModel() {
         mNewsMap = new HashMap<>();
-        mAppDatabase = AppDatabase.getNewsDatabase(context);
         EventBus.getDefault().register(this);
-        initNewsApi();
+
     }
 
-    private void initNewsApi() {
-        final OkHttpClient okHttpClient = new OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .writeTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .build();
 
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(AppConstants.NEWS_BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create(new Gson()))
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-                .client(okHttpClient)
-                .build();
-
-        theApi = retrofit.create(MMNewsAPI.class);
-    }
-
-    public static NewsModel getInstance(Context context) {
-        if(objInstance == null) {
-           objInstance = new NewsModel(context);
+    public static NewsModel getInstance() {
+        if (objInstance == null) {
+            objInstance = new NewsModel();
         }
-       return objInstance;
+        return objInstance;
     }
 
-    public NewsVO geNewsById(String newsId){
+    public NewsVO geNewsById(String newsId) {
         return mNewsMap.get(newsId);
     }
-    public static void initDatabase(Context context) {
-      objInstance = new NewsModel(context);
-    }
 
-    public void startLoadingMMNews(final PublishSubject<List<NewsVO>> newsListSubject) {
-       // MMNewsDataAgentImpl.getInstance().loadMMNews(AppConstants.ACCESS_TOKEN, mmNewsPageIndex);
-        Single<GetNewsResponse> getNewsResponseSingle = theApi.loadMMNews(mmNewsPageIndex,AppConstants.ACCESS_TOKEN);
-        getNewsResponseSingle
-                .subscribeOn(Schedulers.io())
-                .map(new io.reactivex.functions.Function<GetNewsResponse, List<NewsVO>>() {
-                    @Override
-                    public List<NewsVO> apply(GetNewsResponse getNewsResponse) throws Exception {
-                        return getNewsResponse.getNewsList();
-                    }
-                })
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeWith(new SingleObserver<List<NewsVO>>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onSuccess(List<NewsVO> newsVOs) {
-                        newsListSubject.onNext(newsVOs);
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.d(SFCNewsApp.LOG_TAG, "onError: " + e.getMessage());
-                    }
-                } );
+    public void startLoadingMMNews() {
+        MMNewsDataAgentImpl.getInstance().loadMMNews(AppConstants.ACCESS_TOKEN, mmNewsPageIndex);
 
     }
 
 
     @Subscribe(threadMode = ThreadMode.BACKGROUND)
     public void onNewsDataLoaded(RestApiEvents.NewsDataLoadedEvent event) {
-        mAppDatabase.newsDao().deleteAll();
-        for (NewsVO news : event.getLoadNews()) {
-
-           long insertPublication = mAppDatabase.publicationDao().insertPublication(news.getPublication());
-           Log.d(SFCNewsApp.LOG_TAG,"insert total publication" + insertPublication);
-           for(FavoriteActionVO favoriteActionVO : news.getFavoriteActions()){
-               long insertFavouriteActed = mAppDatabase.actedUserDao().insertActedUser(favoriteActionVO.getActedUser());
-               long [] insertFavourite = mAppDatabase.favouriteDao().insertFavourites(news.getFavoriteActions());
-           }
-            for(CommentActionVO commentActionVO : news.getCommentActions()){
-                long insertCommentActed = mAppDatabase.actedUserDao().insertActedUser(commentActionVO.getActedUser());
-                long [] insertComment = mAppDatabase.commentActionDao().insertCommentActions( news.getCommentActions());
+            for (NewsVO news : event.getLoadNews()){
+                mNewsMap.put(news.getNewsId(),news);
             }
-            for(SentToVO sentToVO : news.getSentToActions()){
-                long insertFavouriteSender = mAppDatabase.actedUserDao().insertActedUser(sentToVO.getSender());
-                long insertFavouriteReceiver = mAppDatabase.actedUserDao().insertActedUser(sentToVO.getReceiver());
-                long [] insertSentTo = mAppDatabase.sentToDao().insertSentTos( news.getSentToActions());
-            }
-
-
-
-
-           long  insertNews = mAppDatabase.newsDao().insertNews(news);
-           Log.d(SFCNewsApp.LOG_TAG,"insert total publication" + insertNews);
-        }
-        }
-
+            mmNewsPageIndex = event.getLoadedPageIndex()+1;
     }
-
+}
 
 

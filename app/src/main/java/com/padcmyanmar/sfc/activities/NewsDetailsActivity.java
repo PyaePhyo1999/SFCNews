@@ -6,8 +6,10 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.padcmyanmar.sfc.R;
 import com.padcmyanmar.sfc.adapters.NewsImagesPagerAdapter;
 import com.padcmyanmar.sfc.data.vo.NewsVO;
@@ -30,6 +32,11 @@ public class NewsDetailsActivity extends BaseActivity implements NewsDetailsView
     @BindView(R.id.tv_news_details)
     TextView tvNewsDetails;
 
+    @BindView(R.id.tv_publication_name)
+    TextView tvPublicationName;
+
+    @BindView(R.id.iv_publication_logo)
+    ImageView ivPublicationIogo;
     private NewsDetailPresenter mPresenter;
 
 
@@ -45,12 +52,12 @@ public class NewsDetailsActivity extends BaseActivity implements NewsDetailsView
         setContentView(R.layout.activity_news_details);
         ButterKnife.bind(this, this);
         mPresenter = new NewsDetailPresenter(this);
-        mPresenter.onCreate(getApplicationContext());
+        mPresenter.onCreate();
 
         NewsImagesPagerAdapter newsImagesPagerAdapter = new NewsImagesPagerAdapter(getApplicationContext());
         vpNewsDetailsImages.setAdapter(newsImagesPagerAdapter);
         String newsId = getIntent().getStringExtra(IE_NEWS_ID);
-        mPresenter.onFinishUIComponent(getApplicationContext(),newsId);
+        mPresenter.onFinishUIComponent(newsId);
     }
     @Override
     protected void onStart() {
@@ -85,6 +92,10 @@ public class NewsDetailsActivity extends BaseActivity implements NewsDetailsView
     @Override
     public void displayNewsDetails(NewsVO news) {
         tvNewsDetails.setText(news.getDetails());
+        tvPublicationName.setText(news.getPublication().getTitle());
+        Glide.with(ivPublicationIogo.getContext())
+                .load(news.getPublication().getLogo())
+                .into(ivPublicationIogo);
     }
 
     @Override

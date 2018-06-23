@@ -56,7 +56,7 @@ public class NewsListActivity extends BaseActivity
         setSupportActionBar(toolbar);
 
         mPresenter = new NewsListsPresenter(this);
-        mPresenter.onCreate(getApplicationContext());
+        mPresenter.onCreate();
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {

@@ -16,7 +16,7 @@ public interface MMNewsAPI {
 
     @FormUrlEncoded
     @POST("v1/getMMNews.php")
-    Single<GetNewsResponse> loadMMNews(
+    Call<GetNewsResponse> loadMMNews(
             @Field("page") int pageIndex,
             @Field("access_token") String accessToken);
 }

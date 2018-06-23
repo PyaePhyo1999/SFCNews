@@ -12,7 +12,7 @@ public abstract class BasePresenter<T extends BaseView> {
     protected T mView;
 
 
-    public void onCreate(Context context){}
+    public void onCreate(){}
     public void onStart(){}
     public void onStop(){}
     public void onResume(){}

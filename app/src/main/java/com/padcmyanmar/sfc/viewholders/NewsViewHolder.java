@@ -31,8 +31,10 @@ public class NewsViewHolder extends BaseViewHolder<NewsVO> {
 
     @BindView(R.id.iv_publication_logo)
     ImageView ivPublicationLogo;
+
     private NewsItemDelegate mDelegate;
     private NewsVO news;
+
     public NewsViewHolder(View itemView, NewsItemDelegate newsItemDelegate) {
         super(itemView);
         mDelegate = newsItemDelegate;
@@ -42,15 +44,15 @@ public class NewsViewHolder extends BaseViewHolder<NewsVO> {
     public void setData(NewsVO data) {
         news =data;
         tvBriefNews.setText(data.getDetails());
-//        if (!data.getImages().isEmpty()){
-//            Glide.with(ivNewsImage.getContext())
-//                    .load(data.getImages().get(0))
-//                    .into(ivNewsImage);
-//        }
-//
-//        Glide.with(ivPublicationLogo.getContext())
-//                .load(data.getPublication().getLogo())
-//                .into(ivPublicationLogo);
+        if (!data.getImages().isEmpty()){
+            Glide.with(ivNewsImage.getContext())
+                    .load(data.getImages().get(0))
+                    .into(ivNewsImage);
+        }
+
+        Glide.with(ivPublicationLogo.getContext())
+                .load(data.getPublication().getLogo())
+                .into(ivPublicationLogo);
     }
 
     @Override

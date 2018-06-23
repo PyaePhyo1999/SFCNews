@@ -20,8 +20,8 @@ public class NewsDetailPresenter extends BasePresenter<NewsDetailsView> {
 
 
 
-    public void onFinishUIComponent(Context context,String newsId){
-        NewsVO news=NewsModel.getInstance(context).geNewsById(newsId);
+    public void onFinishUIComponent(String newsId){
+        NewsVO news=NewsModel.getInstance().geNewsById(newsId);
         mView.displayNewsDetails(news);
     }
 

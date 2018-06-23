@@ -27,22 +27,32 @@ import io.reactivex.subjects.PublishSubject;
 public class NewsListsPresenter extends BasePresenter<NewsListsView> implements NewsItemDelegate  {
 
 
-
-    private PublishSubject<List<NewsVO>> mNewsSubject;
-
     public NewsListsPresenter(NewsListsView views){
         super(views);
-        mNewsSubject = PublishSubject.create();
-
-
     }
 
 
     @Override
-    public void onCreate(Context context) {
-        super.onCreate(context);
-        NewsModel.getInstance(context).startLoadingMMNews(mNewsSubject);
+    public void onCreate() {
+        super.onCreate();
+        NewsModel.getInstance().startLoadingMMNews();
 
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (!EventBus.getDefault().isRegistered(this)){
+            EventBus.getDefault().register(this);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if (EventBus.getDefault().isRegistered(this)){
+            EventBus.getDefault().unregister(this);
+        }
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
